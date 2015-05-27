@@ -1,0 +1,17 @@
+﻿@using GridMvc.Html
+@model IEnumerable<VitalFew.EPSSuper.Models.User>
+
+@{
+    ViewBag.Title = "Index";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h2>Index</h2>
+
+@Html.Grid(Model).Columns(columns =>
+{
+    columns.Add(c => c.UserId).Titled("Client ID");
+    columns.Add(c => c.Email).Titled("Name").Filterable(true);
+    columns.Add(c => c.UserTypeId).Titled("Email");
+    columns.Add(c => c.Active).Titled("Email");
+}).WithPaging(3).Sortable(true)

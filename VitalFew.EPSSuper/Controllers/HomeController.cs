@@ -7,8 +7,8 @@ using System.Web.Mvc;
 namespace VitalFew.EPSSuper.Controllers
 {
 
-    [Authorize]
-    public class HomeController : Controller
+    //[Authorize]
+    public class HomeController : BaseController
     {
         public ActionResult Index()
         {

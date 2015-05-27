@@ -1,0 +1,25 @@
+﻿@model IEnumerable<VitalFew.EPSSuper.Models.User>
+@using GridMvc.Html
+@{
+    ViewBag.Title = "Manage Users";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h2>Manage Users</h2>
+
+<div style="width:750px;">
+    @Html.Grid(Model).Columns(columns =>
+{
+    columns.Add(c => c.Email).Titled("Email").Filterable(true);
+    columns.Add(c => c.UserType.UserTypeDescription).Titled("User Type");
+    columns.Add(c => c.Active).Titled("Is Active");
+    columns.Add().Titled("")
+                   .Sanitized(false)
+                   .Encoded(false)
+                   .RenderValueAs(d => Html.ActionLink("Delete", "Delete", new { id = d.UserId }, new { @class = "modal-link", onClick= "return confirm('Are you sure you want delete?');" }));
+}).WithPaging(3).Sortable(true)
+</div>
+
+<h4>
+    @Html.ActionLink("Create a New User", "Create")
+</h4>
