@@ -9,7 +9,23 @@ namespace VitalFew.EPSSuper.Controllers
 {
     public class BaseController : Controller
     {
-             
+        
+        public string ErrorMessage
+        {
+            set
+            {
+                TempData["ErrorMessage"] = value;
+            }
+        }
+
+        public string SuccessMessage
+        {
+            set
+            {
+                TempData["SuccessMessage"] = value;
+            }
+        }
+
         public BaseController()
         {
         }

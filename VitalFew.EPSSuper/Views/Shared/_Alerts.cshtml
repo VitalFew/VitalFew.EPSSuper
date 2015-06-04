@@ -1,0 +1,16 @@
+﻿
+<div style="width:80%">
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger" role="alert">
+            <b>Error : </b> @TempData["ErrorMessage"]
+        </div>
+    }
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success" role="alert">
+            <b>Success : </b> @TempData["SuccessMessage"]
+        </div>
+    }
+</div>

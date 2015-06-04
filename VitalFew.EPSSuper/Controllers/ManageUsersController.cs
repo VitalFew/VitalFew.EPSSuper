@@ -11,7 +11,7 @@ using VitalFew.EPSSuper.Models;
 
 namespace VitalFew.EPSSuper.Controllers
 {
-    public class ManageUsersController : Controller
+    public class ManageUsersController : BaseController
     {
         //private Entities db = new Entities();
         private DatabaseContext db = new DatabaseContext();
@@ -19,13 +19,16 @@ namespace VitalFew.EPSSuper.Controllers
         // GET: ManageUsers
         public async Task<ActionResult> Index()
         {
-            return View(db.ApplicationUser.ToList());
+            return View(db.ApplicationUser.Include(model => model.UserType).OrderByDescending(model => model.UpdatedOn).ToList());
         }
 
         // GET: ManageUsers/Create
         public ActionResult Create()
         {
-            return View();
+            var model = new ApplicationUser();
+            model.Active = true;
+
+            return View(model);
         }
 
         // POST: ManageUsers/Create
@@ -37,82 +40,148 @@ namespace VitalFew.EPSSuper.Controllers
         {
             if (ModelState.IsValid)
             {
-                user.UserID = Guid.NewGuid();
-                user.CreatedOn = DateTime.Now;
-                user.UpdatedOn = DateTime.Now;
+                if (!UserExists(user.Email))
+                {
+                    user.UserID = Guid.NewGuid();
+                    user.UserType = db.ApplicationUserType.FirstOrDefault(type => type.UserTypeID == user.UserType.UserTypeID);
+                    user.CreatedOn = DateTime.Now;
+                    user.UpdatedOn = DateTime.Now;
+                    user.CreatedBy = HttpContext.User.Identity.Name;
+                    user.UpdatedBy = HttpContext.User.Identity.Name;
 
-                db.ApplicationUser.Add(user);
-                await db.SaveChangesAsync();
-                return RedirectToAction("Index");
+                    db.ApplicationUser.Add(user);
+                    await db.SaveChangesAsync();
+
+                    SuccessMessage = "User [" + user.Email + "] is added";
+                    return RedirectToAction("Index", "ManageUsers");
+                }
+                else
+                {
+                    ErrorMessage = "User alrady exists with Email [" + user.Email + "]";
+                }
+            }
+            
+            return View(user);
+        }
+
+        // GET: ManageUsers/Edit/5
+        public async Task<ActionResult> Edit(Guid? id)
+        {
+            if (id != null)
+            {
+                var user = db.ApplicationUser.Include(model => model.UserType).Where(model => model.UserID == id).FirstOrDefault();
+
+                if (user != null)
+                {
+                    return View(user);
+                }
+                else
+                {
+                    return RedirectToAction("Index");
+                }
+            }
+
+            return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
+        }
+
+        // POST: ManageUsers/Edit/5
+        // To protect from overposting attacks, please enable the specific properties you want to bind to, for 
+        // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<ActionResult> Edit(ApplicationUser user)
+        {
+            if (ModelState.IsValid)
+            {
+                var userExisting = db.ApplicationUser.Where(model => model.UserID == user.UserID).FirstOrDefault();
+
+                if (user != null)
+                {
+                    userExisting.UserType = db.ApplicationUserType.FirstOrDefault(type => type.UserTypeID == user.UserType.UserTypeID);
+                    userExisting.Active = user.Active;
+                    userExisting.UpdatedOn = DateTime.Now;
+                    userExisting.UpdatedBy = HttpContext.User.Identity.Name;
+
+                    await db.SaveChangesAsync();
+
+                    SuccessMessage = "User [" + user.Email + "] is updated";
+                }
+
+                return RedirectToAction("Index", "ManageUsers");
             }
 
             return View(user);
         }
 
-        //// GET: ManageUsers/Edit/5
-        //public async Task<ActionResult> Edit(Guid? id)
-        //{
-        //    if (id == null)
-        //    {
-        //        return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
-        //    }
-        //    User user = await db.Users.FindAsync(id);
-        //    if (user == null)
-        //    {
-        //        return HttpNotFound();
-        //    }
-        //    return View(user);
-        //}
+        // GET: ManageUsers/Edit/5
+        public async Task<ActionResult> Status(Guid? id)
+        {
+            if (id != null)
+            {
+                var user = db.ApplicationUser.Include(model => model.UserType).Where(model => model.UserID == id).FirstOrDefault();
 
-        //// POST: ManageUsers/Edit/5
-        //// To protect from overposting attacks, please enable the specific properties you want to bind to, for 
-        //// more details see http://go.microsoft.com/fwlink/?LinkId=317598.
-        //[HttpPost]
-        //[ValidateAntiForgeryToken]
-        //public async Task<ActionResult> Edit([Bind(Include = "UserId,Email,UserTypeId,Active")] User user)
-        //{
-        //    if (ModelState.IsValid)
-        //    {
-        //        db.Entry(user).State = EntityState.Modified;
-        //        await db.SaveChangesAsync();
-        //        return RedirectToAction("Index");
-        //    }
-        //    return View(user);
-        //}
+                if (user != null)
+                {
+                    return View(user);
+                }
+                else
+                {
+                    return RedirectToAction("Index");
+                }
+            }
 
-        //// GET: ManageUsers/Delete/5
-        //public async Task<ActionResult> Delete(Guid? id)
-        //{
-        //    if (id == null)
-        //    {
-        //        return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
-        //    }
-        //    User user = await db.Users.FindAsync(id);
-        //    if (user == null)
-        //    {
-        //        return HttpNotFound();
-        //    }
-        //    return View(user);
-        //}
+            return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
+        }
 
-        //// POST: ManageUsers/Delete/5
-        //[HttpPost, ActionName("Delete")]
-        //[ValidateAntiForgeryToken]
-        //public async Task<ActionResult> DeleteConfirmed(Guid id)
-        //{
-        //    User user = await db.Users.FindAsync(id);
-        //    db.Users.Remove(user);
-        //    await db.SaveChangesAsync();
-        //    return RedirectToAction("Index");
-        //}
+        // POST: ManageUsers/Edit/5
+        // To protect from overposting attacks, please enable the specific properties you want to bind to, for 
+        // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<ActionResult> Status(ApplicationUser user)
+        {
+            if (ModelState.IsValid)
+            {
+                var userExisting = db.ApplicationUser.Where(model => model.UserID == user.UserID).FirstOrDefault();
 
-        //protected override void Dispose(bool disposing)
-        //{
-        //    if (disposing)
-        //    {
-        //        db.Dispose();
-        //    }
-        //    base.Dispose(disposing);
-        //}
-    }
+                if (user != null)
+                {
+                    userExisting.Active = !user.Active;
+                    userExisting.UpdatedOn = DateTime.Now;
+                    userExisting.UpdatedBy = HttpContext.User.Identity.Name;
+
+                    await db.SaveChangesAsync();
+
+                    if (!user.Active)
+                    {
+                        SuccessMessage = "User [" + user.Email + "] is activated";
+                    }
+                    else
+                    {
+                        SuccessMessage = "User [" + user.Email + "] is deactivated";
+                    }
+                }
+
+                return RedirectToAction("Index", "ManageUsers");
+            }
+
+            return View(user);
+        }
+
+        private bool UserExists(string email)
+        {
+            using (DatabaseContext db = new DatabaseContext())
+            {
+                var user = db.ApplicationUser.Where(model => model.Email.ToUpper() == email.ToUpper()).FirstOrDefault();
+
+                if (user == null)
+                {
+                    return false;
+                }
+
+                return true;
+            }
+        }
+
+      }
 }

@@ -26,12 +26,10 @@ namespace VitalFew.EPSSuper
             bundles.Add(new StyleBundle("~/Content/css").Include(
                       "~/Content/bootstrap.css",
                        "~/Content/metro-bootstrap.css",
-                      "~/Content/site.css",
-                      "~/Content/bootstrap.datatables.css"));
+                      "~/Content/site.css"));
 
-            bundles.Add(new ScriptBundle("~/bundles/datatables").Include(
-                       "~/Scripts/jquery.dataTables.min.js",
-                       "~/Scripts/bootstrap.datatables.js"));
+            //bundles.Add(new ScriptBundle("~/bundles/datatables").Include(
+            //           "~/Scripts/DataTables/jquery.dataTables.js"));
         }
     }
 }

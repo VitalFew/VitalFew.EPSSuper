@@ -6,8 +6,8 @@
 }
 
 <div class="jumbotron">
-    <h2><b>Edit User</b></h2>
-    <p class="lead">Edit application user.</p>
+    <h2><b>Activate/Deactivate User</b></h2>
+    <p class="lead">Remove users in the application.</p>
 </div>
 
 @using (Html.BeginForm())
@@ -20,22 +20,17 @@
         <label for="exampleInputEmail1">Email address</label>
         @Html.EditorFor(model => model.Email, new { htmlAttributes = new { @class = "form-control", placeholder = "Enter email", @readonly = "readonly" } })
     </div>
-    <div class="form-group">
-        <label for="exampleInputPassword1">User Type</label>
-        <p>
-            @Html.DropDownListFor(model => model.UserType.UserTypeID, VitalFew.EPSSuper.Infrastructure.Helpers.ListHelper.GetUserTypeList(), "----Select----", null)
-        </p>
-    </div>
-    <div class="form-group">
-        <label for="exampleInputPassword1">Is Active</label>
-        <p>
-            @Html.RadioButtonFor(model => model.Active, true) Yes
-            @Html.RadioButtonFor(model => model.Active, false) No
-        </p>
-    </div>
 
-    <button type="submit" class="btn btn-primary">Submit</button>
+    if (Model.Active)
+    {
+        <button type="submit" class="btn btn-primary">Deactivate</button>
+    }
+    else
+    {
+        <button type="submit" class="btn btn-primary">Active</button>
+    }
 
+    @Html.HiddenFor(model => model.Active)
     @Html.HiddenFor(model => model.UserID)
 }
 
